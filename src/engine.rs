@@ -12,6 +12,8 @@ pub enum Instruction {
     Match,
     Jump(usize),
     Split(usize, usize),
+    MatchBegin,
+    MatchEnd,
 }
 
 impl Display for Instruction {
@@ -21,6 +23,8 @@ impl Display for Instruction {
             Instruction::Match => write!(f, "match"),
             Instruction::Jump(addr) => write!(f, "jump {:>04}", addr),
             Instruction::Split(addr1, addr2) => write!(f, "split {:>04}, {:>04}", addr1, addr2),
+            Instruction::MatchBegin => write!(f, "match begin"),
+            Instruction::MatchEnd => write!(f, "match end"),
         }
     }
 }

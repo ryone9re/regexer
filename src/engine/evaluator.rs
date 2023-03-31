@@ -12,6 +12,7 @@ use std::{
 pub enum EvalError {
     PCOverFlow,
     SPOverFlow,
+    POSOvreFlow,
     InvalidPC,
     // InvalidContext,
 }
@@ -31,6 +32,8 @@ fn eval_depth(
     mut pc: usize,
     mut sp: usize,
 ) -> Result<bool, EvalError> {
+    let mut pos: usize = 0;
+    let mut init_position_state = false;
     loop {
         let next = if let Some(i) = inst.get(pc) {
             i
@@ -41,6 +44,9 @@ fn eval_depth(
         match next {
             Instruction::Char(c) => {
                 if let Some(sp_c) = line.get(sp) {
+                    if *c == '\n' {
+                        init_position_state = true;
+                    }
                     if *c == '.' {
                         safe_add(&mut pc, &1, || EvalError::PCOverFlow)?;
                         safe_add(&mut sp, &1, || EvalError::SPOverFlow)?;
@@ -53,6 +59,13 @@ fn eval_depth(
                 } else {
                     return Ok(false);
                 }
+
+                if init_position_state {
+                    pos = 0;
+                    init_position_state = false;
+                } else {
+                    safe_add(&mut pos, &1, || EvalError::POSOvreFlow)?;
+                }
             }
             Instruction::Match => {
                 return Ok(true);
@@ -63,6 +76,26 @@ fn eval_depth(
             Instruction::Split(addr1, addr2) => {
                 if eval_depth(inst, line, *addr1, sp)? || eval_depth(inst, line, *addr2, sp)? {
                     return Ok(true);
+                } else {
+                    return Ok(false);
+                }
+            }
+            Instruction::MatchBegin => {
+                if pos == 0 {
+                    safe_add(&mut pc, &1, || EvalError::PCOverFlow)?;
+                } else {
+                    return Ok(false);
+                }
+            }
+            Instruction::MatchEnd => {
+                if let Some(c) = line.get(sp) {
+                    if *c == '\n' {
+                        safe_add(&mut pc, &1, || EvalError::PCOverFlow)?;
+                    } else {
+                        return Ok(false);
+                    }
+                } else if pos == line.len() {
+                    safe_add(&mut pc, &1, || EvalError::PCOverFlow)?;
                 } else {
                     return Ok(false);
                 }

@@ -13,6 +13,8 @@ pub enum Ast {
     Question(Box<Ast>),
     Or(Box<Ast>, Box<Ast>),
     Seq(Vec<Ast>),
+    Doller,
+    Hat,
 }
 
 #[derive(Debug)]
@@ -125,6 +127,8 @@ pub fn parse(expr: &str) -> Result<Ast, ParseError> {
                 '+' => parse_plus_star_question(&mut seq, Psq::Plus, i)?,
                 '*' => parse_plus_star_question(&mut seq, Psq::Star, i)?,
                 '?' => parse_plus_star_question(&mut seq, Psq::Question, i)?,
+                '$' => seq.push(Ast::Doller),
+                '^' => seq.push(Ast::Hat),
                 '(' => {
                     // 現在のコンテキストをスタックに保存し､
                     // 現在のコンテキストをからの状態にする
@@ -155,7 +159,7 @@ pub fn parse(expr: &str) -> Result<Ast, ParseError> {
                 }
                 '|' => {
                     if seq.is_empty() {
-                        // "||", "(|abc)"などと､式画からの場合はエラー
+                        // "||", "(|abc)"などと､式が空の場合はエラー
                         return Err(ParseError::NoPrev(i));
                     } else {
                         let prev = take(&mut seq);
@@ -179,7 +183,7 @@ pub fn parse(expr: &str) -> Result<Ast, ParseError> {
         return Err(ParseError::NoRightParen);
     }
 
-    // "()"のように､式画からの場合はpushしない
+    // "()"のように､式が空の場合はpushしない
     if !seq.is_empty() {
         seq_or.push(Ast::Seq(seq));
     }

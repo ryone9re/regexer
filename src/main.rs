@@ -116,16 +116,23 @@ mod tests {
     }
 
     #[test]
-    fn test_line_head() {
-        // パースエラー
-        assert!(do_matching("H^ello", "Hello world", true).is_err());
+    fn test_match_begin() {
+        assert!(do_matching("^foo", "foo", true).unwrap());
+        assert!(!do_matching("^foo", "barfoo", true).unwrap());
+    }
 
-        // パース成功､マッチ成功
-        assert!(do_matching("^Hello", "Hello", true).unwrap());
-        assert!(do_matching("^Hello", "Hello world", true).unwrap());
+    #[test]
+    fn test_match_end() {
+        assert!(do_matching("foo$", "foo", true).unwrap());
+        assert!(!do_matching("foo$", "foobar", true).unwrap());
+        assert!(do_matching("foo$", "foo\n", true).unwrap());
+    }
 
-        // パース成功､マッチ失敗
-        assert!(do_matching("^Hello", "Hi", true).unwrap());
-        assert!(do_matching("^Hello", "Hi Hello world", true).unwrap());
+    #[test]
+    fn test_match_begin_end() {
+        assert!(do_matching("^foo$", "foo", true).unwrap());
+        assert!(!do_matching("^foo$", "foobar", true).unwrap());
+        assert!(!do_matching("^foo$", "barfoo", true).unwrap());
+        assert!(!do_matching("^foo$", "barfoobar", true).unwrap());
     }
 }

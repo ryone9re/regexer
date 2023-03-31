@@ -44,6 +44,8 @@ impl Generator {
             Ast::Star(e) => self.gen_star(e)?,
             Ast::Question(e) => self.gen_question(e)?,
             Ast::Seq(v) => self.gen_seq(v)?,
+            Ast::Doller => self.gen_doller()?,
+            Ast::Hat => self.gen_hat()?,
         }
 
         Ok(())
@@ -184,6 +186,24 @@ impl Generator {
         }
 
         // L2は次の命令になる
+        Ok(())
+    }
+
+    /// doller命令器
+    /// これは文字列の終端をチェックする
+    /// 次の文字が改行か終端ならマッチする
+    fn gen_doller(&mut self) -> Result<(), CodeGenError> {
+        self.insts.push(Instruction::MatchEnd);
+
+        Ok(())
+    }
+
+    /// hat命令器
+    /// これは文字列の先頭をチェックする
+    /// 文字列の先頭ならマッチする
+    fn gen_hat(&mut self) -> Result<(), CodeGenError> {
+        self.insts.push(Instruction::MatchBegin);
+
         Ok(())
     }
 
